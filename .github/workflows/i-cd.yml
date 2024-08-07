@@ -22,12 +22,13 @@ jobs:
           node-version: '18'  # Use the latest LTS version of Node.js
 
       - name: Install dependencies
-        run: npm install --production
+        run: npm install --legacy-peer-deps
 
       - name: Build the project for production
         env:
           NODE_ENV: production
         run: npm run build:prod
+
 
 
   deploy:
@@ -48,7 +49,7 @@ jobs:
           Invoke-Command -ScriptBlock {
             cd C:\inetpub\maher_nest
             git pull origin main
-            npm install --production
+            npm install --production --legacy-peer-deps
             npm run build:prod
             iisreset
           } -Credential $credential -ComputerName devscape.online
