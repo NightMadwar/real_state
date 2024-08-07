@@ -29,7 +29,8 @@ jobs:
           NODE_ENV: production
         run: npm run build:prod
 
-
+      - name: Run tests
+        run: npm test
 
   deploy:
     runs-on: windows-latest
@@ -46,7 +47,12 @@ jobs:
       - name: Deploy to server
         env:
           SSH_PASSWORD: Maher3314156+
-          
         run: |
+          # Create the .ssh directory if it doesn't exist
+          if (-not (Test-Path -Path $env:USERPROFILE\.ssh)) {
+            New-Item -Path $env:USERPROFILE\.ssh -ItemType Directory
+          }
+          # Write the SSH password to a file
           $env:SSH_PASSWORD | ConvertTo-SecureString -AsPlainText -Force | ConvertFrom-SecureString | Out-File "$env:USERPROFILE\.ssh\password.txt"
-          sshpass -f "$env:USERPROFILE\.ssh\password.txt" ssh -o StrictHostKeyChecking=no Maher@devscape.online "cd C:\inetpub\maher_nest && git pull origin main && npm install --production --legacy-peer-deps && npm run build:prod && iisreset"
+          # Use sshpass to deploy
+          sshpass -f "$env:USERPROFILE\.ssh\password.txt" ssh -o StrictHostKeyChecking=no Maher@109.199.119.120 "cd /path/to/your/project && git pull origin main && npm install --production --legacy-peer-deps && npm run build:prod && iisreset"
