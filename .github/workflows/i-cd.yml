@@ -14,12 +14,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: '20'  # Use the Node.js version your project requires
+          node-version: '18'  # Use the latest LTS version of Node.js
 
       - name: Install dependencies
         run: npm install
@@ -27,6 +27,8 @@ jobs:
       - name: Build the project
         run: npm run build
 
+      - name: Run tests
+        run: npm test
 
   deploy:
     runs-on: windows-latest
@@ -34,23 +36,18 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Install Chocolatey
-        run: |
-          Set-ExecutionPolicy Bypass -Scope Process -Force
-          [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-          iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-
-      - name: Install sshpass
-        run: choco install sshpass -y
+        uses: actions/checkout@v3
 
       - name: Deploy to server
         env:
           SSH_PASSWORD: Maher3314156+
         run: |
-          sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no Maher@devscape.online "cd C:\inetpub\maher_nest && git pull origin main && npm install && npm run build && iisreset"
-
-      - name: Set Directory Permissions
-        run: |
-          sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no Maher@devscape.online "icacls C:\inetpub\maher_nest /grant IIS_IUSRS:(OI)(CI)F"
+          $password = ConvertTo-SecureString $env:SSH_PASSWORD -AsPlainText -Force
+          $credential = New-Object System.Management.Automation.PSCredential ('Maher', $password)
+          Invoke-Command -ScriptBlock {
+            cd C:\inetpub\maher_nest
+            git pull origin main
+            npm install
+            npm run build
+            iisreset
+          } -Credential $credential -ComputerName devscape.online
