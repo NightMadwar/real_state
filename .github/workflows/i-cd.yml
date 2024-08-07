@@ -1,0 +1,43 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'  # Use the Node.js version your project requires
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the project
+        run: npm run build
+
+  deploy:
+    runs-on: windows-latest
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install sshpass
+        run: choco install sshpass
+
+      - name: Deploy to server
+        run: |
+          sshpass -p Maher3314156+ ssh -o StrictHostKeyChecking=no Maher@devscape.online "cd C:\inetpub\maher_nest && git pull origin main && npm install && npm run build && iisreset"
