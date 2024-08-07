@@ -15,6 +15,7 @@ import { AuthModule } from './auth/auth.module';
 import { BookModule } from './book/book.module';
 import { NestFactory } from '@nestjs/core';
 import { LoggingMiddleware } from './common/middleware/logging/logging.middleware';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { LoggingMiddleware } from './common/middleware/logging/logging.middlewar
     PaymentModule,
     AuthModule,
     BookModule,
+    AdminModule,
   ],
 })
 export class AppModule implements NestModule {
