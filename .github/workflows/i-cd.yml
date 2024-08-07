@@ -19,13 +19,14 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '20'  # Use the Node.js version your project requires
+          node-version: '16'  # Use the Node.js version your project requires
 
       - name: Install dependencies
         run: npm install
 
       - name: Build the project
         run: npm run build
+
 
   deploy:
     runs-on: windows-latest
@@ -35,9 +36,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Install Chocolatey
+        run: |
+          Set-ExecutionPolicy Bypass -Scope Process -Force
+          [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+          iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
       - name: Install sshpass
-        run: choco install sshpass
+        run: choco install sshpass -y
 
       - name: Deploy to server
+        env:
+          SSH_PASSWORD: Maher3314156+
         run: |
-          sshpass -p Maher3314156+ ssh -o StrictHostKeyChecking=no Maher@devscape.online "cd C:\inetpub\maher_nest && git pull origin main && npm install && npm run build && iisreset"
+          sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no Maher@devscape.online "cd C:\inetpub\maher_nest && git pull origin main && npm install && npm run build && iisreset"
+
+      - name: Set Directory Permissions
+        run: |
+          sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no Maher@devscape.online "icacls C:\inetpub\maher_nest /grant IIS_IUSRS:(OI)(CI)F"
