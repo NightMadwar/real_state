@@ -20,7 +20,7 @@ export class AppointmentService {
   }
 
   // Find an appointment by ID
-  async findById(id: string): Promise<Appointment> {
+  async findById(id: string): Promise<Appointment | null> {
     const appointment = await this.appointmentModel.findById(id).exec();
     if (!appointment) {
       throw new NotFoundException(`Appointment with ID ${id} not found`);
@@ -34,7 +34,7 @@ export class AppointmentService {
   }
 
   // Update an appointment by ID
-  async update(id: string, updateAppointmentDto: UpdateAppointmentDto): Promise<Appointment> {
+  async update(id: string, updateAppointmentDto: UpdateAppointmentDto): Promise<Appointment | null> {
     const updatedAppointment = await this.appointmentModel.findByIdAndUpdate(
       id,
       updateAppointmentDto,
@@ -47,7 +47,7 @@ export class AppointmentService {
   }
 
   // Delete an appointment by ID
-  async delete(id: string): Promise<Appointment> {
+  async delete(id: string): Promise<Appointment | null> {
     const deletedAppointment = await this.appointmentModel.findByIdAndDelete(id).exec();
     if (!deletedAppointment) {
       throw new NotFoundException(`Appointment with ID ${id} not found`);

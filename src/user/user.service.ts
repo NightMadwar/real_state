@@ -30,7 +30,7 @@ export class UserService {
     return users;
   }
 
-  async findOne(id: string): Promise<User> {
+  async findOne(id: string): Promise<User | null> {
     const cachedUser = await this.cacheManager.get<User>(`user:${id}`);
     if (cachedUser) {
       return cachedUser;
@@ -43,13 +43,15 @@ export class UserService {
     return user;
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<User | null> {
     const updatedUser = await this.userModel.findByIdAndUpdate(id, updateUserDto, { new: true }).exec();
-    await this.cacheManager.set(`user:${id}`, updatedUser, 3600 );
+    if (updatedUser) {
+      await this.cacheManager.set(`user:${id}`, updatedUser, 3600 );
+    }
     return updatedUser;
   }
 
-  async remove(id: string): Promise<User> {
+  async remove(id: string): Promise<User | null> {
     const deletedUser = await this.userModel.findByIdAndDelete(id).exec();
     await this.cacheManager.del(`user:${id}`);
     return deletedUser;

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Payment } from './schemas/payment.schema';
@@ -18,15 +18,31 @@ export class PaymentService {
     return this.paymentModel.find().exec();
   }
 
-  async findOne(id: string): Promise<Payment> {
-    return this.paymentModel.findById(id).exec();
+  async findOne(id: string): Promise<Payment | null> {
+    const payment = await this.paymentModel.findById(id).exec();
+    if (!payment) {
+      throw new NotFoundException(`Payment with ID ${id} not found`);
+    }
+    return payment;
   }
 
-  async update(id: string, updatePaymentDto: UpdatePaymentDto): Promise<Payment> {
-    return this.paymentModel.findByIdAndUpdate(id, updatePaymentDto, { new: true }).exec();
+  async update(id: string, updatePaymentDto: UpdatePaymentDto): Promise<Payment | null> {
+    const updatedPayment = await this.paymentModel.findByIdAndUpdate(
+      id,
+      updatePaymentDto,
+      { new: true }
+    ).exec();
+    if (!updatedPayment) {
+      throw new NotFoundException(`Payment with ID ${id} not found`);
+    }
+    return updatedPayment;
   }
 
-  async remove(id: string): Promise<Payment> {
-    return this.paymentModel.findByIdAndDelete(id).exec();
+  async remove(id: string): Promise<Payment | null> {
+    const deletedPayment = await this.paymentModel.findByIdAndDelete(id).exec();
+    if (!deletedPayment) {
+      throw new NotFoundException(`Payment with ID ${id} not found`);
+    }
+    return deletedPayment;
   }
 }

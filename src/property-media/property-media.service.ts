@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { PropertyMedia } from './schemas/property-media.schema';
@@ -18,15 +18,31 @@ export class PropertyMediaService {
     return this.propertyMediaModel.find().exec();
   }
 
-  async findOne(id: string): Promise<PropertyMedia> {
-    return this.propertyMediaModel.findById(id).exec();
+  async findOne(id: string): Promise<PropertyMedia | null> {
+    const propertyMedia = await this.propertyMediaModel.findById(id).exec();
+    if (!propertyMedia) {
+      throw new NotFoundException(`PropertyMedia with ID ${id} not found`);
+    }
+    return propertyMedia;
   }
 
-  async update(id: string, updatePropertyMediaDto: UpdatePropertyMediaDto): Promise<PropertyMedia> {
-    return this.propertyMediaModel.findByIdAndUpdate(id, updatePropertyMediaDto, { new: true }).exec();
+  async update(id: string, updatePropertyMediaDto: UpdatePropertyMediaDto): Promise<PropertyMedia | null> {
+    const updatedPropertyMedia = await this.propertyMediaModel.findByIdAndUpdate(
+      id,
+      updatePropertyMediaDto,
+      { new: true }
+    ).exec();
+    if (!updatedPropertyMedia) {
+      throw new NotFoundException(`PropertyMedia with ID ${id} not found`);
+    }
+    return updatedPropertyMedia;
   }
 
-  async remove(id: string): Promise<PropertyMedia> {
-    return this.propertyMediaModel.findByIdAndDelete(id).exec();
+  async remove(id: string): Promise<PropertyMedia | null> {
+    const deletedPropertyMedia = await this.propertyMediaModel.findByIdAndDelete(id).exec();
+    if (!deletedPropertyMedia) {
+      throw new NotFoundException(`PropertyMedia with ID ${id} not found`);
+    }
+    return deletedPropertyMedia;
   }
 }

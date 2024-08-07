@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Property } from './schemas/property.schema';
@@ -18,15 +18,31 @@ export class PropertyService {
     return this.propertyModel.find().exec();
   }
 
-  async findOne(id: string): Promise<Property> {
-    return this.propertyModel.findById(id).exec();
+  async findOne(id: string): Promise<Property | null> {
+    const property = await this.propertyModel.findById(id).exec();
+    if (!property) {
+      throw new NotFoundException(`Property with ID ${id} not found`);
+    }
+    return property;
   }
 
-  async update(id: string, updatePropertyDto: UpdatePropertyDto): Promise<Property> {
-    return this.propertyModel.findByIdAndUpdate(id, updatePropertyDto, { new: true }).exec();
+  async update(id: string, updatePropertyDto: UpdatePropertyDto): Promise<Property | null> {
+    const updatedProperty = await this.propertyModel.findByIdAndUpdate(
+      id,
+      updatePropertyDto,
+      { new: true }
+    ).exec();
+    if (!updatedProperty) {
+      throw new NotFoundException(`Property with ID ${id} not found`);
+    }
+    return updatedProperty;
   }
 
-  async remove(id: string): Promise<Property> {
-    return this.propertyModel.findByIdAndDelete(id).exec();
+  async remove(id: string): Promise<Property | null> {
+    const deletedProperty = await this.propertyModel.findByIdAndDelete(id).exec();
+    if (!deletedProperty) {
+      throw new NotFoundException(`Property with ID ${id} not found`);
+    }
+    return deletedProperty;
   }
 }

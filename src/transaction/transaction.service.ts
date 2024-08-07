@@ -18,15 +18,15 @@ export class TransactionService {
     return this.transactionModel.find().exec();
   }
 
-  async findOne(id: string): Promise<Transaction> {
+  async findOne(id: string): Promise<Transaction | null> {
     return this.transactionModel.findById(id).exec();
   }
 
-  async update(id: string, updateTransactionDto: UpdateTransactionDto): Promise<Transaction> {
+  async update(id: string, updateTransactionDto: UpdateTransactionDto): Promise<Transaction | null> {
     return this.transactionModel.findByIdAndUpdate(id, updateTransactionDto, { new: true }).exec();
   }
 
-  async remove(id: string): Promise<Transaction> {
+  async remove(id: string): Promise<Transaction | null> {
     return this.transactionModel.findByIdAndDelete(id).exec();
   }
 }

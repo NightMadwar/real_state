@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Report } from './schemas/report.schema';
@@ -18,15 +18,31 @@ export class ReportService {
     return this.reportModel.find().exec();
   }
 
-  async findOne(id: string): Promise<Report> {
-    return this.reportModel.findById(id).exec();
+  async findOne(id: string): Promise<Report | null> {
+    const report = await this.reportModel.findById(id).exec();
+    if (!report) {
+      throw new NotFoundException(`Report with ID ${id} not found`);
+    }
+    return report;
   }
 
-  async update(id: string, updateReportDto: UpdateReportDto): Promise<Report> {
-    return this.reportModel.findByIdAndUpdate(id, updateReportDto, { new: true }).exec();
+  async update(id: string, updateReportDto: UpdateReportDto): Promise<Report | null> {
+    const updatedReport = await this.reportModel.findByIdAndUpdate(
+      id,
+      updateReportDto,
+      { new: true }
+    ).exec();
+    if (!updatedReport) {
+      throw new NotFoundException(`Report with ID ${id} not found`);
+    }
+    return updatedReport;
   }
 
-  async remove(id: string): Promise<Report> {
-    return this.reportModel.findByIdAndDelete(id).exec();
+  async remove(id: string): Promise<Report | null> {
+    const deletedReport = await this.reportModel.findByIdAndDelete(id).exec();
+    if (!deletedReport) {
+      throw new NotFoundException(`Report with ID ${id} not found`);
+    }
+    return deletedReport;
   }
 }

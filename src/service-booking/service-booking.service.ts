@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ServiceBooking } from './schemas/service-booking.schema';
@@ -18,15 +18,31 @@ export class ServiceBookingService {
     return this.serviceBookingModel.find().exec();
   }
 
-  async findOne(id: string): Promise<ServiceBooking> {
-    return this.serviceBookingModel.findById(id).exec();
+  async findOne(id: string): Promise<ServiceBooking | null> {
+    const serviceBooking = await this.serviceBookingModel.findById(id).exec();
+    if (!serviceBooking) {
+      throw new NotFoundException(`ServiceBooking with ID ${id} not found`);
+    }
+    return serviceBooking;
   }
 
-  async update(id: string, updateServiceBookingDto: UpdateServiceBookingDto): Promise<ServiceBooking> {
-    return this.serviceBookingModel.findByIdAndUpdate(id, updateServiceBookingDto, { new: true }).exec();
+  async update(id: string, updateServiceBookingDto: UpdateServiceBookingDto): Promise<ServiceBooking | null> {
+    const updatedServiceBooking = await this.serviceBookingModel.findByIdAndUpdate(
+      id,
+      updateServiceBookingDto,
+      { new: true }
+    ).exec();
+    if (!updatedServiceBooking) {
+      throw new NotFoundException(`ServiceBooking with ID ${id} not found`);
+    }
+    return updatedServiceBooking;
   }
 
-  async remove(id: string): Promise<ServiceBooking> {
-    return this.serviceBookingModel.findByIdAndDelete(id).exec();
+  async remove(id: string): Promise<ServiceBooking | null> {
+    const deletedServiceBooking = await this.serviceBookingModel.findByIdAndDelete(id).exec();
+    if (!deletedServiceBooking) {
+      throw new NotFoundException(`ServiceBooking with ID ${id} not found`);
+    }
+    return deletedServiceBooking;
   }
 }

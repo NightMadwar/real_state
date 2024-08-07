@@ -18,15 +18,15 @@ export class MessageService {
     return this.messageModel.find().exec();
   }
 
-  async findOne(id: string): Promise<Message> {
+  async findOne(id: string): Promise<Message | null> {
     return this.messageModel.findById(id).exec();
   }
 
-  async update(id: string, updateMessageDto: UpdateMessageDto): Promise<Message> {
+  async update(id: string, updateMessageDto: UpdateMessageDto): Promise<Message | null> {
     return this.messageModel.findByIdAndUpdate(id, updateMessageDto, { new: true }).exec();
   }
 
-  async remove(id: string): Promise<Message> {
+  async remove(id: string): Promise<Message | null> {
     return this.messageModel.findByIdAndDelete(id).exec();
   }
 }
