@@ -50,7 +50,15 @@ jobs:
           if (-not (Test-Path -Path $env:USERPROFILE\.ssh)) {
             New-Item -Path $env:USERPROFILE\.ssh -ItemType Directory
           }
-          # Write the SSH password to a file
-          $env:SSH_PASSWORD | ConvertTo-SecureString -AsPlainText -Force | ConvertFrom-SecureString | Out-File "$env:USERPROFILE\.ssh\password.txt"
-          # Use sshpass to deploy
-          sshpass -f "$env:USERPROFILE\.ssh\password.txt" ssh -o StrictHostKeyChecking=no Maher@109.199.119.120 "cd /path/to/your/project && git pull origin main && npm install --production --legacy-peer-deps && npm run build:prod && iisreset"
+          # Create an SSH session with password authentication
+          $securePassword = ConvertTo-SecureString $env:SSH_PASSWORD -AsPlainText -Force
+          $credential = New-Object System.Management.Automation.PSCredential ('Maher', $securePassword)
+          $session = New-PSSession -HostName 109.199.119.120 -UserName 'Maher' -SSHTransport -Credential $credential
+          Invoke-Command -Session $session -ScriptBlock {
+            cd /path/to/your/project
+            git pull origin main
+            npm install --production --legacy-peer-deps
+            npm run build:prod
+            iisreset
+          }
+          Remove-PSSession -Session $session
