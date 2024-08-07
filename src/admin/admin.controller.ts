@@ -1,34 +1,47 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, NotFoundException } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
+import { Admin } from './entities/admin.schema';
 
 @Controller('admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Post()
-  create(@Body() createAdminDto: CreateAdminDto) {
+  async create(@Body() createAdminDto: CreateAdminDto): Promise<Admin> {
     return this.adminService.create(createAdminDto);
   }
 
   @Get()
-  findAll() {
+  async findAll(): Promise<Admin[]> {
     return this.adminService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.adminService.findOne(+id);
+  async findOne(@Param('id') id: string): Promise<Admin> {
+    const admin = await this.adminService.findOne(id);
+    if (!admin) {
+      throw new NotFoundException(`Admin with ID ${id} not found`);
+    }
+    return admin;
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAdminDto: UpdateAdminDto) {
-    return this.adminService.update(+id, updateAdminDto);
+  @Put(':id')
+  async update(@Param('id') id: string, @Body() updateAdminDto: UpdateAdminDto): Promise<Admin> {
+    const updatedAdmin = await this.adminService.update(id, updateAdminDto);
+    if (!updatedAdmin) {
+      throw new NotFoundException(`Admin with ID ${id} not found`);
+    }
+    return updatedAdmin;
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.adminService.remove(+id);
+  async remove(@Param('id') id: string): Promise<Admin> {
+    const deletedAdmin = await this.adminService.remove(id);
+    if (!deletedAdmin) {
+      throw new NotFoundException(`Admin with ID ${id} not found`);
+    }
+    return deletedAdmin;
   }
 }
