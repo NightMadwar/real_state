@@ -1,0 +1,45 @@
+import { All, MiddlewareConsumer, Module ,NestModule } from '@nestjs/common';
+import { CacheModule } from '@nestjs/cache-manager';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule } from '@nestjs/config';
+import { UserModule } from './user/user.module';
+import { PropertyModule } from './property/property.module';
+import { TransactionModule } from './transaction/transaction.module';
+import { MessageModule } from './message/message.module';
+import { ServiceBookingModule } from './service-booking/service-booking.module';
+import { ReportModule } from './report/report.module';
+import { PropertyMediaModule } from './property-media/property-media.module';
+import { AppointmentModule } from './appointment/appointment.module';
+import { PaymentModule } from './payment/payment.module';
+import { AuthModule } from './auth/auth.module';
+import { BookModule } from './book/book.module';
+import { NestFactory } from '@nestjs/core';
+import { LoggingMiddleware } from './common/middleware/logging/logging.middleware';
+
+@Module({
+  imports: [
+    CacheModule.register({
+      isGlobal: true,
+    }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    MongooseModule.forRoot(process.env.MONGO_URI || 'mongodb://localhost:27017/real_estate_db'),
+    UserModule,
+    PropertyModule,
+    TransactionModule,
+    MessageModule,
+    ServiceBookingModule,
+    ReportModule,
+    PropertyMediaModule,
+    AppointmentModule,
+    PaymentModule,
+    AuthModule,
+    BookModule,
+  ],
+})
+export class AppModule implements NestModule {
+configure(consumer: MiddlewareConsumer) {
+  consumer.apply(LoggingMiddleware).forRoutes('*')
+}
+}
