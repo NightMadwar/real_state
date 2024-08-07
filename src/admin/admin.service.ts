@@ -1,15 +1,24 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
+import { Admin } from './entities/admin.schema';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class AdminService {
-  create(createAdminDto: CreateAdminDto) {
-    return 'This action adds a new admin';
+  constructor(@InjectModel(Admin.name) private adminModel: Model<Admin>) {}
+  async create(createAdminDto: CreateAdminDto) : Promise<Admin>  {
+    try {
+      const newAppointment = new this.adminModel(createAdminDto);
+      return await newAppointment.save();
+    } catch (error) {
+      throw new ConflictException('Error creating admin: ' + error.message);
+    }
   }
 
-  findAll() {
-    return `This action returns all admin`;
+  findAll() : Promise<Admin[]> {
+    return this.adminModel.find().exec();
   }
 
   findOne(id: number) {
