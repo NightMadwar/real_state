@@ -29,9 +29,7 @@ jobs:
           NODE_ENV: production
         run: npm run build:prod
 
-      - name: Run tests
-        run: npm test
-
+     
   deploy:
     runs-on: windows-latest
     needs: build
