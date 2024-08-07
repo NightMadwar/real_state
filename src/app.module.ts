@@ -24,6 +24,7 @@ import { AdminModule } from './admin/admin.module';
     }),
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: '.env', 
     }),
     MongooseModule.forRoot(process.env.MONGO_URI || 'mongodb://localhost:27017/real_estate_db'),
     UserModule,

@@ -39,17 +39,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Install OpenSSH Client
+        run: |
+          Add-WindowsCapability -Online -Name OpenSSH.Client
+
       - name: Deploy to server
         env:
           SSH_PASSWORD: Maher3314156+
-          NODE_ENV: production
+          
         run: |
-          $password = ConvertTo-SecureString $env:SSH_PASSWORD -AsPlainText -Force
-          $credential = New-Object System.Management.Automation.PSCredential ('Maher', $password)
-          Invoke-Command -ScriptBlock {
-            cd C:\inetpub\maher_nest
-            git pull origin main
-            npm install --production --legacy-peer-deps
-            npm run build:prod
-            iisreset
-          } -Credential $credential -ComputerName devscape.online
+          $env:SSH_PASSWORD | ConvertTo-SecureString -AsPlainText -Force | ConvertFrom-SecureString | Out-File "$env:USERPROFILE\.ssh\password.txt"
+          sshpass -f "$env:USERPROFILE\.ssh\password.txt" ssh -o StrictHostKeyChecking=no Maher@devscape.online "cd C:\inetpub\maher_nest && git pull origin main && npm install --production --legacy-peer-deps && npm run build:prod && iisreset"
