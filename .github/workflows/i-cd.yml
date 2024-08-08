@@ -32,7 +32,7 @@ jobs:
 
 
   deploy:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     needs: build
     timeout-minutes: 60  # Increase the timeout as necessary
 
@@ -40,29 +40,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install OpenSSH Client
+      - name: Install sshpass
         run: |
-          Add-WindowsCapability -Online -Name OpenSSH.Client
+          sudo apt-get update
+          sudo apt-get install -y sshpass
 
       - name: Deploy to server
         env:
           SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
           PROJECT_PATH: ${{ secrets.PROJECT_PATH }}
         run: |
-          # Create the .ssh directory if it doesn't exist
-          if (-not (Test-Path -Path $env:USERPROFILE\.ssh)) {
-            New-Item -Path $env:USERPROFILE\.ssh -ItemType Directory
-          }
-          # Write the SSH password to a file
-          $env:SSH_PASSWORD | ConvertTo-SecureString -AsPlainText -Force | ConvertFrom-SecureString | Out-File "$env:USERPROFILE\.ssh\password.txt"
           # Create a script to run on the remote server
-          $remoteScript = @"
-          cd $env:PROJECT_PATH
+          remote_script=$(cat << 'EOF'
+          cd $PROJECT_PATH
           git pull origin main
           npm install --production --legacy-peer-deps
           npm run build:prod
-          iisreset
-          "@
-          $remoteScript | Out-File "$env:USERPROFILE\remote-script.ps1"
-          # Run the script on the remote server using ssh
-          ssh -o BatchMode=yes -o StrictHostKeyChecking=no Maher@109.199.119.120 "powershell.exe -File $env:PROJECT_PATH\remote-script.ps1"
+          sudo iisreset
+          EOF
+          )
+          echo "$remote_script" > remote-script.sh
+          chmod +x remote-script.sh
+          # Use sshpass to run the script on the remote server
+          sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no Maher@109.199.119.120 'bash -s' < remote-script.sh
