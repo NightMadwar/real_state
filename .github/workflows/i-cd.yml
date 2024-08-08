@@ -11,6 +11,7 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    timeout-minutes: 120  # Increase the timeout as necessary
 
     steps:
       - name: Checkout code
@@ -29,9 +30,11 @@ jobs:
           NODE_ENV: production
         run: npm run build:prod
 
+
   deploy:
     runs-on: windows-latest
     needs: build
+    timeout-minutes: 60  # Increase the timeout as necessary
 
     steps:
       - name: Checkout code
@@ -62,4 +65,4 @@ jobs:
           "@
           $remoteScript | Out-File "$env:USERPROFILE\remote-script.ps1"
           # Run the script on the remote server using ssh
-          Start-Process ssh -ArgumentList @('-o', 'StrictHostKeyChecking=no', 'Maher@109.199.119.120', '-p', '22', 'powershell.exe -File remote-script.ps1') -NoNewWindow -Wait
+          ssh -o BatchMode=yes -o StrictHostKeyChecking=no Maher@109.199.119.120 "powershell.exe -File $env:PROJECT_PATH\remote-script.ps1"
